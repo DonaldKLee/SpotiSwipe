@@ -1,4 +1,5 @@
 import React from 'react';
+import styled from 'styled-components';
 import { Route, useLocation, Link } from "react-router-dom";
 import ReactDOM from 'react-dom/client';
 import HomePage from './pages/home';
