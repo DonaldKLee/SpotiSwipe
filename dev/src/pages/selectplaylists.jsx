@@ -3,7 +3,7 @@ import styled from "styled-components";
 import SpotifyWebApi from 'spotify-web-api-js';
 import { getTokenFromURL } from "../components/getSpotifyToken";
 import playlistCoverPlaceholder from "../images/playlistCoverPlaceholder.png"
-
+import { Link } from "react-router-dom";
 import Navbar from "../components/navigationbar";
 
 const SelectPlaylistsPageContainer = styled.div`
@@ -26,12 +26,13 @@ const PlaylistsContainer = styled.div`
     margin: 0 auto;
 `
 const PlaylistContainer = styled.div`
-    background: #333;
     width: 300px;
     height: 80px;
     margin: 10px auto;
     border-radius: 10px;
     overflow: hidden;
+    transition: 0.2s;
+    cursor: pointer;
 `
 const PlaylistImage = styled.img`
     width: 80px;
@@ -45,7 +46,7 @@ const PlaylistName = styled.a`
     left: 15px;
 `
 
-const StartSwipingButton = styled.a`
+const StartSwipingButton = styled(Link)`
     background: #1DB954;
     color: white;
     text-decoration: none;
@@ -71,6 +72,7 @@ const SelectPlaylistsPages = () => {
     const [spotifyToken, setSpotifyToken] = useState("")
     const [user, setSpotifyUser] = useState("")
     const [playlists, setPlaylists] = useState([])
+    const [selectedPlaylists, setSelectedPlaylists] = useState([])
     useEffect(() => {
         const userSpotifyToken = getTokenFromURL().access_token;
         setAccessTokenURL(window.location.hash)
@@ -95,6 +97,16 @@ const SelectPlaylistsPages = () => {
 
     }, [spotifyToken])
 
+    const addPlaylist = (playlist) => {
+        if (selectedPlaylists.includes(playlist)) {
+            // keeps playlist if they aren't equal to p
+            setSelectedPlaylists(selectedPlaylists.filter((p) => p !== playlist));
+          } else {
+            // creates a new array based off selectedPlaylists, and adds playlist
+            setSelectedPlaylists([...selectedPlaylists, playlist]);
+          }
+    }
+    
     return (
         <>
             <Navbar />
@@ -102,7 +114,13 @@ const SelectPlaylistsPages = () => {
                 <Intro>Welcome, {user.display_name}</Intro>
                 <PlaylistsContainer>
                     {playlists && playlists.map((playlist, index) => (
-                        <PlaylistContainer key={index}>
+                        <PlaylistContainer 
+                            key={index} 
+                            style={{backgroundColor: selectedPlaylists.includes(playlist)? '#1DB954' : '#333'}}
+                            onClick={() => {
+                                addPlaylist(playlist);
+                            }}
+                        >
                             <PlaylistImage src={playlist.images.length > 0 ? playlist.images[0].url : playlistCoverPlaceholder} />
                             <PlaylistName href={playlist.external_urls["spotify"]} target="_blank">
                                 {playlist.name}
@@ -111,8 +129,17 @@ const SelectPlaylistsPages = () => {
                         </PlaylistContainer>
                     ))}
                 </PlaylistsContainer>
+                
+                {/* <StartSwipingButton href={"/startswiping" + accessTokenURL}>Start Swiping!</StartSwipingButton> */}
+                
+                <StartSwipingButton
+                    to="/startswiping"
+                    state={{ 
+                        token: accessTokenURL,
+                        playlists: selectedPlaylists
+                        }}>Start Swiping!
+                </StartSwipingButton>
 
-                <StartSwipingButton href={"/startswiping" + accessTokenURL}>Start Swiping!</StartSwipingButton>
             </SelectPlaylistsPageContainer>
         </>
     )
