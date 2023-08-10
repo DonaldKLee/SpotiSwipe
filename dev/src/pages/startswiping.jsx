@@ -6,11 +6,15 @@ import Navbar from "../components/navigationbar";
 import { useLocation } from 'react-router-dom'
 
 const StartSwipingPageContainer = styled.div`
-
+    width: 100%;
+    overflow-x: hidden
 `
 
 const SwipeContainer = styled.div`
-    width: 1000%;
+    width: 100%;
+    display: block;
+    margin: 10px auto;
+    height: 550px;
 `
 
 const MusicContainer = styled.div`
@@ -18,8 +22,8 @@ const MusicContainer = styled.div`
     height: 400px;
     width: 250px;
     border-radius: 20px;
-    display: inline-block;
-    margin: 10px;
+    display: block;
+    margin: 10px auto;
     overflow: hidden;
 `
 
@@ -42,6 +46,7 @@ const StartSwipingPage = () => {
     const [dataTest, setTestData] = useState("")
     const [songIDs, setSongIDs] = useState([])
     const [songsToDisplay, setDisplaySongs] = useState([])
+    let [displaySongIndex, setDisplaySongIndex] = useState(0);
     const location = useLocation()
     const selectedPlaylists = location.state.playlists
 
@@ -86,8 +91,6 @@ const StartSwipingPage = () => {
     // runs if songIDs is updated
     useEffect(() => {
         let recommendations = [];
-        // console.log(songIDs[0])
-        // console.log({songsInPlaylists}["songsInPlaylists"]["0"])
         const randomlySelectedSongs = []
         for (let i = 0; i<5; i++) {
             randomlySelectedSongs.push(songIDs[Math.floor(Math.random() * songIDs.length)]);
@@ -121,12 +124,56 @@ const StartSwipingPage = () => {
         }
 
         // console.log(recommendations)
-        setDisplaySongs(recommendations)
+        setDisplaySongs(recommendations);
+        // setDisplaySongIndex(0);
     }, [songIDs])
 
     useEffect(() => {
         console.log(songsToDisplay)
     }, [songsToDisplay])
+
+    useEffect(() => {
+        const handleKeyClicks = (event) => {
+            // alert(event.key);
+            // right arrow key
+            if (event.key === "ArrowRight") {
+                // alert(displaySongIndex);
+                // setDisplaySongIndex(displaySongIndex + 1);
+                displaySongIndex += 1;
+                setDisplaySongIndex(displaySongIndex + 1);
+                // alert("Added");
+            }
+            // left arrow key
+            if (event.key === "ArrowLeft") {
+                displaySongIndex += 1;
+                setDisplaySongIndex(displaySongIndex + 1);
+                // alert("Skipped");
+            }
+            // go back (down arrow key)
+            // if (event.key === "ArrowDown") {
+            //     displaySongIndex -= 1;
+            //     setDisplaySongIndex(displaySongIndex - 1);
+            // }
+
+        };
+        window.addEventListener('keydown', handleKeyClicks);
+      }, []);
+
+
+      
+    useEffect(() => {
+        try {
+            // if (document.getElementById("audioPreview").duration > 0) {
+                document.getElementById("audioPreview").play();
+            // }
+        } catch {}
+    }, [displaySongIndex])
+
+    try {
+        // if (document.getElementById("audioPreview").duration > 0) {
+            document.getElementById("audioPreview").play();
+        // }
+    } catch {}
 
     return (
         <StartSwipingPageContainer>
@@ -135,17 +182,26 @@ const StartSwipingPage = () => {
             <SwipeContainer>
                 {/* <h1>{Object.keys(songsToDisplay).length}</h1> */}
                 {Object.keys(songsToDisplay).length > 0 ? (
-                    songsToDisplay.map((song, index) => (
-                    <MusicContainer key={index}>
-                        <MusicImage src={song["album"]["images"][0].url} />
-                        <MusicName style={{ color: "white" }}>{song["name"]}</MusicName>
+                    // songsToDisplay.map((song, index) => (
+                    // <MusicContainer key={index}>
+                    //     <MusicImage src={song["album"]["images"][0].url} />
+                    //     <MusicName style={{ color: "white" }}>{song["name"]}</MusicName>
 
-                        <audio controls>
-                        <source src={song["preview_url"]} type="audio/ogg" />
+                    //     <audio controls>
+                    //     <source src={song["preview_url"]} type="audio/ogg" />
+                    //     Your browser does not support the audio element.
+                    //     </audio>
+                    // </MusicContainer>
+                    // ))
+                    <MusicContainer key={displaySongIndex}>
+                        <MusicImage src={songsToDisplay[displaySongIndex]["album"]["images"][0].url} />
+                        <MusicName style={{ color: "white" }}>{songsToDisplay[displaySongIndex]["name"]}</MusicName>
+
+                        <audio id="audioPreview" controls>
+                        <source src={songsToDisplay[displaySongIndex]["preview_url"]} type="audio/ogg" />
                         Your browser does not support the audio element.
                         </audio>
                     </MusicContainer>
-                    ))
                 ) : (
                     <p>No songs to display</p>
                 )}
